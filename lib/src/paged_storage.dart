@@ -113,7 +113,7 @@ class PagedStorage<T> {
 
     if (isTiled()) {
       // it's inside mPages, and we're tiled. Jump to correct tile.
-      localPageIndex = (localIndex / mPageSize) as int;
+      localPageIndex = localIndex ~/ mPageSize;
       pageInternalIndex = localIndex % mPageSize;
     } else {
       // it's inside mPages, but page sizes aren't regular. Walk to correct tile.
@@ -186,7 +186,7 @@ class PagedStorage<T> {
   }
 
   int getMiddleOfLoadedRange() {
-    return mLeadingNullCount + mPositionOffset + (mStorageCount / 2) as int;
+    return mLeadingNullCount + mPositionOffset + mStorageCount ~/ 2;
   }
 
   int computeLeadingNulls() {
@@ -401,7 +401,7 @@ class PagedStorage<T> {
     }
 
     int localPageIndex =
-        ((positionOfPage - mLeadingNullCount) / mPageSize) as int;
+        (positionOfPage - mLeadingNullCount) ~/ mPageSize;
 
     // walk outside in, return false if we find non-placeholder page before localPageIndex
     if (trimFromFront) {
@@ -424,7 +424,7 @@ class PagedStorage<T> {
 
   void initAndSplit(int leadingNulls, List<T> multiPageList, int trailingNulls,
       int positionOffset, int pageSize, PagedStorageCallback callback) {
-    int pageCount = ((multiPageList.length + (pageSize - 1)) / pageSize) as int;
+    int pageCount = (multiPageList.length + (pageSize - 1)) ~/ pageSize;
     for (int i = 0; i < pageCount; i++) {
       int beginInclusive = i * pageSize;
       int endExclusive = min(multiPageList.length, (i + 1) * pageSize);
@@ -457,7 +457,7 @@ class PagedStorage<T> {
       insertPage(position, page, callback);
     } else {
       // trim would have us drop the page we just loaded - swap it to null
-      int localPageIndex = ((position - mLeadingNullCount) / mPageSize) as int;
+      int localPageIndex = (position - mLeadingNullCount) ~/ mPageSize;
       mPages[localPageIndex] = null;
 
       // note: we also remove it, so we don't have to guess how large a 'null' page is later
@@ -503,11 +503,11 @@ class PagedStorage<T> {
       }
     }
 
-    int pageIndex = (position / mPageSize) as int;
+    int pageIndex = position ~/ mPageSize;
 
     allocatePageRange(pageIndex, pageIndex);
 
-    int localPageIndex = (pageIndex - mLeadingNullCount / mPageSize) as int;
+    int localPageIndex = (pageIndex - mLeadingNullCount / mPageSize).toInt();
 
     List<T> oldPage = mPages[localPageIndex];
     if (oldPage != null && oldPage != PLACEHOLDER_LIST) {
@@ -521,7 +521,7 @@ class PagedStorage<T> {
   }
 
   void allocatePageRange(final int minimumPage, final int maximumPage) {
-    int leadingNullPages = (mLeadingNullCount / mPageSize) as int;
+    int leadingNullPages = mLeadingNullCount ~/ mPageSize;
 
     if (minimumPage < leadingNullPages) {
       for (int i = 0; i < leadingNullPages - minimumPage; i++) {
@@ -558,13 +558,13 @@ class PagedStorage<T> {
       mPageSize = pageSize;
     }
 
-    final int maxPageCount = ((size() + mPageSize - 1) / mPageSize) as int;
-    int minimumPage = max(((index - prefetchDistance) / mPageSize) as int, 0);
+    final int maxPageCount = (size() + mPageSize - 1) ~/ mPageSize;
+    int minimumPage = max((index - prefetchDistance) ~/ mPageSize, 0);
     int maximumPage =
-        min(((index + prefetchDistance) / mPageSize) as int, maxPageCount - 1);
+        min((index + prefetchDistance) ~/ mPageSize, maxPageCount - 1);
 
     allocatePageRange(minimumPage, maximumPage);
-    int leadingNullPages = (mLeadingNullCount / mPageSize) as int;
+    int leadingNullPages = mLeadingNullCount ~/ mPageSize;
     for (int pageIndex = minimumPage; pageIndex <= maximumPage; pageIndex++) {
       int localPageIndex = pageIndex - leadingNullPages;
       if (mPages[localPageIndex] == null) {
@@ -578,7 +578,7 @@ class PagedStorage<T> {
   bool hasPage(int pageSize, int index) {
     // NOTE: we pass pageSize here to avoid in case mPageSize
     // not fully initialized (when last page only one loaded)
-    int leadingNullPages = (mLeadingNullCount / pageSize) as int;
+    int leadingNullPages = mLeadingNullCount ~/ pageSize;
 
     if (index < leadingNullPages || index >= leadingNullPages + mPages.length) {
       return false;

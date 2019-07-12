@@ -31,9 +31,11 @@ class ContiguousPagedList<K, V> extends PagedList<V>
 
   ContiguousPagedList(ContiguousDataSource<K, V> dataSource,
       BoundaryCallback<V> boundaryCallback, Config config, K key, int lastLoad)
-      : super(PagedStorage(), boundaryCallback, config) {
+      : super(PagedStorage<V>(), boundaryCallback, config) {
     mDataSource = dataSource;
     mLastLoad = lastLoad;
+
+    mReceiver = MyPageResultReceiver<V>(this);
 
     if (mDataSource.invalid) {
       detach();
@@ -285,7 +287,7 @@ class MyPageResultReceiver<V> implements PageResultReceiver<V> {
         // initialize it to the middle of the initial load
         pagedList.mLastLoad = (pageResult.leadingNulls +
             pageResult.positionOffset +
-            page.length / 2) as int;
+            page.length / 2).toInt();
       }
     } else {
       // if we end up trimming, we trim from side that's furthest from most recent access
