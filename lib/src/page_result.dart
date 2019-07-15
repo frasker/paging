@@ -3,15 +3,12 @@ class PageResult<T> {
   /// <p>
   /// Note, distinct from {@link #INVALID_RESULT} because {@link #isInvalid()} checks instance.
 
-  static final PageResult EMPTY_RESULT = PageResult(List(), 0);
-  static final PageResult INVALID_RESULT = PageResult(List(), 0);
-
   static PageResult<T> getEmptyResult<T>() {
-    return EMPTY_RESULT;
+    return PageResult<T>(List(), 0);
   }
 
   static PageResult<T> getInvalidResult<T>() {
-    return INVALID_RESULT;
+    return PageResult<T>(List(), 0, invalid: true);
   }
 
   static final int INIT = 0;
@@ -31,8 +28,10 @@ class PageResult<T> {
 
   final int positionOffset;
 
+  final bool invalid;
+
   PageResult(this.page, this.positionOffset,
-      {this.leadingNulls = 0, this.trailingNulls = 0});
+      {this.leadingNulls = 0, this.trailingNulls = 0, this.invalid = false});
 
   @override
   String toString() {
@@ -40,7 +39,7 @@ class PageResult<T> {
   }
 
   bool isInvalid() {
-    return this == INVALID_RESULT;
+    return invalid;
   }
 }
 

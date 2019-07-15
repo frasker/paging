@@ -3,34 +3,47 @@ import 'package:paging/livedata.dart';
 import 'package:paging/src/page_list.dart';
 import 'package:paging/src/paged_list_differ.dart';
 
+import 'listupdate_callback.dart';
+
 class PageBuilder<T> extends StatefulWidget {
-  PageBuilder({
-    Key key,
-    @required this.pageListLiveData,
-    @required this.builder,
-    this.child,
-  })  : assert(builder != null),
+  PageBuilder(
+      {Key key,
+      @required this.pageListLiveData,
+      @required this.builder,
+      this.child,
+      this.pagedListListener})
+      : assert(builder != null),
         super(key: key);
 
   final Widget child;
 
   /// Must not be null.
-  final Widget Function(BuildContext context, PagedList<T> previousList,
-      PagedList<T> currentList, Widget child) builder;
+  final Widget Function(BuildContext context,
+      PagedListDiffer<T> pagedListDiffer, Widget child) builder;
+
+  final PagedListListener<T> pagedListListener;
 
   final LiveData<PagedList<T>> pageListLiveData;
 
   @override
-  _PageBuilderState createState() => _PageBuilderState();
+  _PageBuilderState createState() =>
+      _PageBuilderState<T>(builder, pagedListListener);
 }
 
-class _PageBuilderState<T> extends State<PageBuilder>
-    with PagedListListener<T> {
-  AsyncPagedListDiffer<T> pagedListDiffer;
+class _PageBuilderState<T> extends State<PageBuilder> with ListUpdateCallback {
+  /// Must not be null.
+  final Widget Function(BuildContext context,
+      PagedListDiffer<T> pagedListDiffer, Widget child) builder;
+
+  final PagedListListener<T> pagedListListener;
+
+  PagedListDiffer<T> pagedListDiffer;
 
   PagedList<T> previousList;
 
   PagedList<T> currentList;
+
+  _PageBuilderState(this.builder, this.pagedListListener);
 
   void _pageListChanged() {
     pagedListDiffer.submitList(widget.pageListLiveData.value);
@@ -38,35 +51,36 @@ class _PageBuilderState<T> extends State<PageBuilder>
 
   @override
   void initState() {
-    pagedListDiffer = AsyncPagedListDiffer();
-    pagedListDiffer.addPagedListListener(this);
+    pagedListDiffer = PagedListDiffer<T>(this);
+    if (pagedListListener != null) {
+      pagedListDiffer.addPagedListListener(pagedListListener);
+    }
     widget.pageListLiveData.addListener(_pageListChanged);
     super.initState();
   }
 
   @override
   void dispose() {
-    pagedListDiffer.removePagedListListener(this);
+    if (pagedListListener != null) {
+      pagedListDiffer.removePagedListListener(pagedListListener);
+    }
     widget.pageListLiveData.dispose();
     super.dispose();
   }
 
   @override
   Widget build(BuildContext context) {
-    return widget.builder(
+    return builder(
       context,
-      previousList,
-      currentList,
+      pagedListDiffer,
       widget.child,
     );
   }
 
   @override
-  void onCurrentListChanged(
-      PagedList<T> previousList, PagedList<T> currentList) {
-    setState(() {
-      this.previousList = previousList;
-      this.currentList = currentList;
+  void onChanged() {
+    Future(() {
+      setState(() {});
     });
   }
 }

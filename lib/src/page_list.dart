@@ -280,9 +280,9 @@ abstract class PagedList<T> {
   /// @param callback Callback to dispatch to.
   ///
   /// @see #removeCallback(Callback)
-  void addCallback(List<T> previousSnapshot, Callback callback) {
+  void addCallback(PagedList<T> previousSnapshot, Callback callback) {
     if (previousSnapshot != null && previousSnapshot != this) {
-      if (previousSnapshot.isEmpty) {
+      if (previousSnapshot.isEmpty()) {
         if (!mStorage.isEmpty()) {
           // If snapshot is empty, diff is trivial - just notify number new items.
           // Note: occurs in async init, when snapshot taken before init page arrives

@@ -1,14 +1,29 @@
 import 'dart:math';
 
+import 'package:paging/widget/listupdate_callback.dart';
+
 import 'page_list.dart';
 
-class AsyncPagedListDiffer<T> {
+/// Listener for when the current PagedList is updated.
+///
+/// @param <T> Type of items in PagedList
+typedef PagedListListener<T> = Function(PagedList<T> previousList, PagedList<T> currentList);
+
+class PagedListDiffer<T> {
   bool mIsContiguous;
 
   PagedList<T> mPagedList;
   PagedList<T> mSnapshot;
 
   final List<PagedListListener<T>> mListeners = List();
+
+  final ListUpdateCallback mUpdateCallback;
+
+  Callback _mPagedListCallback;
+
+  PagedListDiffer(this.mUpdateCallback) {
+    _mPagedListCallback = _MyPagedListCallback(mUpdateCallback);
+  }
 
   T getItem(int index) {
     if (mPagedList == null) {
@@ -55,10 +70,12 @@ class AsyncPagedListDiffer<T> {
     final PagedList<T> previous = (mSnapshot != null) ? mSnapshot : mPagedList;
     if (pagedList == null) {
       if (mPagedList != null) {
+        mPagedList.removeCallback(_mPagedListCallback);
         mPagedList = null;
       } else if (mSnapshot != null) {
         mSnapshot = null;
       }
+      mUpdateCallback.onChanged();
       onCurrentListChanged(previous, null, commitCallback);
       return;
     }
@@ -66,11 +83,22 @@ class AsyncPagedListDiffer<T> {
     if (mPagedList == null && mSnapshot == null) {
       // fast simple first insert
       mPagedList = pagedList;
+      pagedList.addCallback(null, _mPagedListCallback);
+
+      // dispatch update callback after updating mPagedList/mSnapshot
+      mUpdateCallback.onChanged();
+
       onCurrentListChanged(null, pagedList, commitCallback);
       return;
     }
 
-    mPagedList = null;
+    if (mPagedList != null) {
+      // first update scheduled on this list, so capture mPages as a snapshot, removing
+      // callbacks so we don't have resolve updates against a moving target
+      mPagedList.removeCallback(_mPagedListCallback);
+      mSnapshot = mPagedList.snapshot();
+      mPagedList = null;
+    }
 
     if (mSnapshot == null || mPagedList != null) {
       throw new Exception("must be in snapshot state to diff");
@@ -86,7 +114,7 @@ class AsyncPagedListDiffer<T> {
   void onCurrentListChanged(PagedList<T> previousList, PagedList<T> currentList,
       Function commitCallback) {
     for (PagedListListener<T> listener in mListeners) {
-      listener.onCurrentListChanged(previousList, currentList);
+      listener(previousList, currentList);
     }
     if (commitCallback != null) {
       commitCallback();
@@ -101,6 +129,8 @@ class AsyncPagedListDiffer<T> {
     PagedList<T> previousSnapshot = mSnapshot;
     mPagedList = newList;
     mSnapshot = null;
+    mUpdateCallback.onChanged();
+    newList.addCallback(diffSnapshot, _mPagedListCallback);
     if (!mPagedList.isEmpty()) {
       // Transform the last loadAround() index from the old list to the new list by passing it
       // through the DiffResult. This ensures the lastKey of a positional PagedList is carried
@@ -155,14 +185,24 @@ class AsyncPagedListDiffer<T> {
   }
 }
 
-/// Listener for when the current PagedList is updated.
-///
-/// @param <T> Type of items in PagedList
-abstract class PagedListListener<T> {
-  /// Called after the current PagedList has been updated.
-  ///
-  /// @param previousList The previous list, may be null.
-  /// @param currentList The new current list, may be null.
-  void onCurrentListChanged(
-      PagedList<T> previousList, PagedList<T> currentList);
+
+class _MyPagedListCallback extends Callback {
+  final ListUpdateCallback mUpdateCallback;
+
+  _MyPagedListCallback(this.mUpdateCallback);
+
+  @override
+  void onChanged(int position, int count) {
+    mUpdateCallback.onChanged();
+  }
+
+  @override
+  void onInserted(int position, int count) {
+    mUpdateCallback.onChanged();
+  }
+
+  @override
+  void onRemoved(int position, int count) {
+    mUpdateCallback.onChanged();
+  }
 }

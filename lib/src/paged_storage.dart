@@ -6,7 +6,7 @@ class PagedStorage<T> {
   /// Lists instances are compared (with instance equality) to PLACEHOLDER_LIST to check if an item
   /// in that position is already loading. We use a singleton placeholder list that is distinct
   /// from Collections.emptyList() for safety.
-  static final List PLACEHOLDER_LIST = List();
+  final List<T> PLACEHOLDER_LIST = List<T>();
 
   int mLeadingNullCount;
 
