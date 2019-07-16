@@ -16,7 +16,7 @@ class MyDataSource extends PageKeyedDataSource<int, Bean> {
   @override
   void loadAfter(LoadParams<int> params, LoadCallback<int, Bean> callback) {
     if (params.key == 0) {
-      callback.onResult(List(), 0);
+      callback.onResult(List<Bean>(), 0);
     } else {
       pages++;
       load(params.key).then((data) {
@@ -42,6 +42,13 @@ class MyDataSource extends PageKeyedDataSource<int, Bean> {
     print("load data");
     return List.generate(5, (index) {
       return Bean();
+    });
+  }
+
+  Future<List<Bean>> loadNulls(int lastId) async {
+    print("load data");
+    return List.generate(5, (index) {
+      return null;
     });
   }
 }

@@ -56,7 +56,8 @@ class _MyHomePageState extends State<MyHomePage> {
   @override
   void initState() {
     MyFactory factory = MyFactory();
-    var config = Config(5, 5, true, 5, Config.MAX_SIZE_UNBOUNDED);
+    var config =
+        Config(pageSize: 5, enablePlaceholders: false, initialLoadSizeHint: 10);
     mPageListLiveData =
         LivePagedListBuilder<int, Bean>(config, factory).create();
     super.initState();
@@ -88,7 +89,7 @@ class _MyHomePageState extends State<MyHomePage> {
                   itemBuilder: (context, position) {
                     var bean = pagedListDiffer.getItem(position);
                     print(
-                        "当前位置$position  count ${pagedListDiffer.getItemCount()}");
+                        "当前位置$position  count ${pagedListDiffer.getItemCount()} ${bean?.toString()}");
 
                     return Text(
                       "text  $position",

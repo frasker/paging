@@ -430,20 +430,24 @@ class Config {
 
   static final int DEFAULT_INITIAL_PAGE_MULTIPLIER = 3;
 
-  Config(int pageSize, int prefetchDistance, bool enablePlaceholders,
-      int initialLoadSizeHint, int maxSize) {
+  Config(
+      {int pageSize = -1,
+      int prefetchDistance = -1,
+      bool enablePlaceholders = true,
+      int initialLoadSizeHint = -1,
+      int maxSize = MAX_SIZE_UNBOUNDED}) {
     if (pageSize < 1) {
       throw new Exception("Page size must be a positive number");
     }
     if (prefetchDistance < 0) {
-      throw new Exception("prefetch distance must >= 0");
+      _prefetchDistance = pageSize;
     }
     _prefetchDistance = prefetchDistance;
     _pageSize = pageSize;
     _enablePlaceholders = enablePlaceholders;
 
     if (initialLoadSizeHint < 1) {
-      throw new Exception("Page size must be a positive number");
+      _initialLoadSizeHint = pageSize * DEFAULT_INITIAL_PAGE_MULTIPLIER;
     }
     _initialLoadSizeHint = initialLoadSizeHint;
     if (maxSize < 2) {
