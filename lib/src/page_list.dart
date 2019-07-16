@@ -1,7 +1,11 @@
 import 'dart:math';
 
+import 'contiguous_data_source.dart';
+import 'contiguous_paged_list.dart';
 import 'data_source.dart';
 import 'paged_storage.dart';
+import 'positional_data_source.dart';
+import 'tiled_page_list.dart';
 
 abstract class PagedList<T> {
   final BoundaryCallback<T> mBoundaryCallback;
@@ -13,7 +17,7 @@ abstract class PagedList<T> {
   /// Used by positional data
   /// sources to initialize loading near viewport
   int mLastLoad = 0;
-  T mLastItem = null;
+  T mLastItem;
 
   int mRequiredRemainder;
 
@@ -37,6 +41,28 @@ abstract class PagedList<T> {
 
   PagedList(this.mStorage, this.mBoundaryCallback, this._mConfig) {
     mRequiredRemainder = _mConfig.prefetchDistance * 2 + _mConfig.pageSize;
+  }
+
+  static PagedList<T> create<K, T>(DataSource<K, T> dataSource,
+      BoundaryCallback<T> boundaryCallback, Config config, K key) {
+    if (dataSource.isContiguous() || !config.enablePlaceholders) {
+      int lastLoad = ContiguousPagedList.LAST_LOAD_UNSPECIFIED;
+      if (!dataSource.isContiguous()) {
+        //noinspection unchecked
+        dataSource = ((dataSource as PositionalDataSource<T>)
+            .wrapAsContiguousWithoutPlaceholders()) as DataSource<K, T>;
+        if (key != null) {
+          lastLoad = key as int;
+        }
+      }
+      ContiguousDataSource<K, T> configDataSource =
+          dataSource as ContiguousDataSource<K, T>;
+      return new ContiguousPagedList<K, T>(
+          configDataSource, boundaryCallback, config, key, lastLoad);
+    } else {
+      return new TiledPagedList<T>(dataSource as PositionalDataSource<T>,
+          boundaryCallback, config, (key != null) ? key as int : 0);
+    }
   }
 
   /// Get the item in the list of loaded items at the provided index.
@@ -169,7 +195,7 @@ abstract class PagedList<T> {
     return mStorage.size();
   }
 
-  bool isEmpty(){
+  bool isEmpty() {
     return size() == 0;
   }
 

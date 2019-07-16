@@ -26,13 +26,16 @@ class LivePagedListBuilder<Key, Value> {
     if (mList != null) {
       initializeKey = mList.getLastKey();
     }
-    if (mDataSource != null) {
-      mDataSource.removeInvalidatedCallback(invalidatedCallback);
-    }
-    mDataSource = mDataSourceFactory.create();
-    mDataSource.addInvalidatedCallback(invalidatedCallback);
-    mList = ContiguousPagedList(mDataSource, mBoundaryCallback, mConfig,
-        initializeKey, ContiguousPagedList.LAST_LOAD_UNSPECIFIED);
+    do {
+      if (mDataSource != null) {
+        mDataSource.removeInvalidatedCallback(invalidatedCallback);
+      }
+      mDataSource = mDataSourceFactory.create();
+      mDataSource.addInvalidatedCallback(invalidatedCallback);
+
+      mList = PagedList.create<Key, Value>(
+          mDataSource, mBoundaryCallback, mConfig, initializeKey);
+    } while (mList.isDetached());
     return mList;
   }
 

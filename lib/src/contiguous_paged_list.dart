@@ -155,15 +155,17 @@ class ContiguousPagedList<K, V> extends PagedList<V>
 
     // safe to access first item here - mStorage can't be empty if we're prepending
     final V item = mStorage.getFirstLoadedItem();
-    if (isDetached()) {
-      return;
-    }
-    if (mDataSource.invalid) {
-      detach();
-    } else {
-      mDataSource.dispatchLoadBefore(
-          position, item, getConfig().pageSize, mReceiver);
-    }
+    Future(() {
+      if (isDetached()) {
+        return;
+      }
+      if (mDataSource.invalid) {
+        detach();
+      } else {
+        mDataSource.dispatchLoadBefore(
+            position, item, getConfig().pageSize, mReceiver);
+      }
+    });
   }
 
   void _scheduleAppend() {
@@ -179,15 +181,17 @@ class ContiguousPagedList<K, V> extends PagedList<V>
 
     // safe to access first item here - mStorage can't be empty if we're appending
     final V item = mStorage.getLastLoadedItem();
-    if (isDetached()) {
-      return;
-    }
-    if (mDataSource.invalid) {
-      detach();
-    } else {
-      mDataSource.dispatchLoadAfter(
-          position, item, getConfig().pageSize, mReceiver);
-    }
+    Future(() {
+      if (isDetached()) {
+        return;
+      }
+      if (mDataSource.invalid) {
+        detach();
+      } else {
+        mDataSource.dispatchLoadAfter(
+            position, item, getConfig().pageSize, mReceiver);
+      }
+    });
   }
 
   @override
@@ -286,8 +290,9 @@ class MyPageResultReceiver<V> implements PageResultReceiver<V> {
         // Because the ContiguousPagedList wasn't initialized with a last load position,
         // initialize it to the middle of the initial load
         pagedList.mLastLoad = (pageResult.leadingNulls +
-            pageResult.positionOffset +
-            page.length / 2).toInt();
+                pageResult.positionOffset +
+                page.length / 2)
+            .toInt();
       }
     } else {
       // if we end up trimming, we trim from side that's furthest from most recent access

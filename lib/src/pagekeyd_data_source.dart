@@ -1,8 +1,10 @@
-
+import 'package:paging/src/data_source.dart';
+import 'package:paging/src/data_source.dart';
 
 import 'contiguous_data_source.dart';
 import 'data_source.dart';
 import 'page_result.dart';
+import 'wrapper_pagekeyd_data_source.dart';
 
 abstract class PageKeyedDataSource<Key, Value>
     extends ContiguousDataSource<Key, Value> {
@@ -36,8 +38,8 @@ abstract class PageKeyedDataSource<Key, Value>
       int pageSize, PageResultReceiver<Value> receiver) {
     Key key = getNextKey();
     if (key != null) {
-      loadAfter(new LoadParams(key, pageSize),
-          new LoadCallbackImpl(this, PageResult.APPEND, receiver));
+      loadAfter(new LoadParams<Key>(key, pageSize),
+          new LoadCallbackImpl<Key, Value>(this, PageResult.APPEND, receiver));
     } else {
       receiver.onPageResult(
           PageResult.APPEND, PageResult.getEmptyResult<Value>());
@@ -49,8 +51,8 @@ abstract class PageKeyedDataSource<Key, Value>
       int pageSize, PageResultReceiver<Value> receiver) {
     Key key = getPreviousKey();
     if (key != null) {
-      loadBefore(new LoadParams(key, pageSize),
-          new LoadCallbackImpl(this, PageResult.PREPEND, receiver));
+      loadBefore(LoadParams<Key>(key, pageSize),
+          new LoadCallbackImpl<Key, Value>(this, PageResult.PREPEND, receiver));
     } else {
       receiver.onPageResult(
           PageResult.PREPEND, PageResult.getEmptyResult<Value>());
@@ -61,8 +63,8 @@ abstract class PageKeyedDataSource<Key, Value>
   void dispatchLoadInitial(Key key, int initialLoadSize, int pageSize,
       bool enablePlaceholders, PageResultReceiver<Value> receiver) {
     LoadInitialCallbackImpl<Key, Value> callback =
-        LoadInitialCallbackImpl(this, enablePlaceholders, receiver);
-    loadInitial(new LoadInitialParams<Key>(initialLoadSize, enablePlaceholders),
+        LoadInitialCallbackImpl<Key, Value>(this, enablePlaceholders, receiver);
+    loadInitial(LoadInitialParams<Key>(initialLoadSize, enablePlaceholders),
         callback);
   }
 
@@ -89,6 +91,18 @@ abstract class PageKeyedDataSource<Key, Value>
      *        - Re-trigger loadInitial, and break assumption it will only occur once.
      */
     return false;
+  }
+
+  @override
+  PageKeyedDataSource<Key, ToValue> mapByPage<ToValue>(
+      List<ToValue> Function(List<Value> data) func) {
+    return WrapperPageKeyedDataSource<Key, Value, ToValue>(this, func);
+  }
+
+  @override
+  PageKeyedDataSource<Key, ToValue> map<ToValue>(ToValue Function(Value data) func) {
+    return mapByPage<ToValue>(
+        DataSource.createListFunction<Value, ToValue>(func));
   }
 }
 
@@ -161,14 +175,14 @@ abstract class LoadInitialCallback<Key, Value> {
 
 class LoadInitialCallbackImpl<Key, Value>
     extends LoadInitialCallback<Key, Value> {
-  LoadCallbackHelper<Value> mCallbackHelper;
+  LoadCallbackHelper<Key, Value> mCallbackHelper;
   PageKeyedDataSource<Key, Value> _mDataSource;
   bool _mCountingEnabled;
 
   LoadInitialCallbackImpl(PageKeyedDataSource<Key, Value> dataSource,
       bool countingEnabled, PageResultReceiver<Value> receiver) {
     this.mCallbackHelper =
-        LoadCallbackHelper(dataSource, PageResult.INIT, receiver);
+        LoadCallbackHelper<Key, Value>(dataSource, PageResult.INIT, receiver);
     this._mDataSource = dataSource;
     this._mCountingEnabled = countingEnabled;
   }
@@ -177,7 +191,7 @@ class LoadInitialCallbackImpl<Key, Value>
   void onResult(List<Value> data, Key previousPageKey, Key nextPageKey) {
     if (!mCallbackHelper.dispatchInvalidResultIfInvalid()) {
       _mDataSource.initKeys(previousPageKey, nextPageKey);
-      mCallbackHelper.dispatchResultToReceiver(PageResult(data, 0));
+      mCallbackHelper.dispatchResultToReceiver(PageResult<Value>(data, 0));
     }
   }
 
@@ -192,10 +206,10 @@ class LoadInitialCallbackImpl<Key, Value>
 
       int trailingUnloadedCount = totalCount - position - data.length;
       if (_mCountingEnabled) {
-        mCallbackHelper.dispatchResultToReceiver(PageResult(data, 0,
+        mCallbackHelper.dispatchResultToReceiver(PageResult<Value>(data, 0,
             leadingNulls: position, trailingNulls: trailingUnloadedCount));
       } else {
-        mCallbackHelper.dispatchResultToReceiver(PageResult(data, position));
+        mCallbackHelper.dispatchResultToReceiver(PageResult<Value>(data, position));
       }
     }
   }
@@ -225,12 +239,12 @@ abstract class LoadCallback<Key, Value> {
 }
 
 class LoadCallbackImpl<Key, Value> extends LoadCallback<Key, Value> {
-  LoadCallbackHelper<Value> _mCallbackHelper;
+  LoadCallbackHelper<Key, Value> _mCallbackHelper;
   PageKeyedDataSource<Key, Value> _mDataSource;
 
   LoadCallbackImpl(PageKeyedDataSource<Key, Value> dataSource, int type,
       PageResultReceiver<Value> receiver) {
-    _mCallbackHelper = LoadCallbackHelper(dataSource, type, receiver);
+    _mCallbackHelper = LoadCallbackHelper<Key, Value>(dataSource, type, receiver);
     _mDataSource = dataSource;
   }
 
@@ -242,7 +256,7 @@ class LoadCallbackImpl<Key, Value> extends LoadCallback<Key, Value> {
       } else {
         _mDataSource.setPreviousKey(adjacentPageKey);
       }
-      _mCallbackHelper.dispatchResultToReceiver(PageResult(data, 0));
+      _mCallbackHelper.dispatchResultToReceiver(PageResult<Value>(data, 0));
     }
   }
 }

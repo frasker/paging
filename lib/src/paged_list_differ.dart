@@ -7,7 +7,8 @@ import 'page_list.dart';
 /// Listener for when the current PagedList is updated.
 ///
 /// @param <T> Type of items in PagedList
-typedef PagedListListener<T> = Function(PagedList<T> previousList, PagedList<T> currentList);
+typedef PagedListListener<T> = Function(
+    PagedList<T> previousList, PagedList<T> currentList);
 
 class PagedListDiffer<T> {
   bool mIsContiguous;
@@ -106,9 +107,10 @@ class PagedListDiffer<T> {
 
     final PagedList<T> oldSnapshot = mSnapshot;
     final PagedList<T> newSnapshot = pagedList.snapshot();
-
-    latchPagedList(
-        pagedList, newSnapshot, oldSnapshot.mLastLoad, commitCallback);
+    Future(() {
+      latchPagedList(
+          pagedList, newSnapshot, oldSnapshot.mLastLoad, commitCallback);
+    });
   }
 
   void onCurrentListChanged(PagedList<T> previousList, PagedList<T> currentList,
@@ -183,8 +185,13 @@ class PagedListDiffer<T> {
     }
     return mPagedList;
   }
-}
 
+  void dispose() {
+    if (mPagedList != null) {
+      mPagedList.removeCallback(_mPagedListCallback);
+    }
+  }
+}
 
 class _MyPagedListCallback extends Callback {
   final ListUpdateCallback mUpdateCallback;

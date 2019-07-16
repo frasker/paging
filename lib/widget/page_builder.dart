@@ -61,6 +61,7 @@ class _PageBuilderState<T> extends State<PageBuilder> with ListUpdateCallback {
 
   @override
   void dispose() {
+    pagedListDiffer.dispose();
     if (pagedListListener != null) {
       pagedListDiffer.removePagedListListener(pagedListListener);
     }
@@ -79,8 +80,6 @@ class _PageBuilderState<T> extends State<PageBuilder> with ListUpdateCallback {
 
   @override
   void onChanged() {
-    Future(() {
-      setState(() {});
-    });
+    setState(() {});
   }
 }
