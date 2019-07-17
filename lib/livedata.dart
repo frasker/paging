@@ -4,6 +4,8 @@ import 'package:flutter/widgets.dart';
 
 /// LiveData 类似 Android 中 LiveData
 abstract class LiveData<T> extends Listenable {
+  static const int START_VERSION = 0;
+
   Set<VoidCallback> _listeners = Set<VoidCallback>();
 
   bool _debugAssertNotDisposed() {
@@ -19,6 +21,8 @@ abstract class LiveData<T> extends Listenable {
 
   int _version = 0;
   int _microtaskVersion = 0;
+
+  int get version => _version;
 
   T get value => _value;
   T _value;
