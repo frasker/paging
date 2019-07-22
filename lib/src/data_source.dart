@@ -11,6 +11,7 @@ typedef InvalidatedCallback = Function();
 abstract class DataSource<Key, Value> {
   bool _mInvalid = false;
   Set<InvalidatedCallback> _mOnInvalidatedCallbacks = Set();
+  Set<InvalidatedCallback> _mToRemoveCallbacks = Set();
 
   bool isContiguous();
 
@@ -19,13 +20,15 @@ abstract class DataSource<Key, Value> {
   }
 
   void removeInvalidatedCallback(InvalidatedCallback onInvalidatedCallback) {
-    _mOnInvalidatedCallbacks.remove(onInvalidatedCallback);
+    _mToRemoveCallbacks.add(onInvalidatedCallback);
   }
 
   void invalidate() {
     _mInvalid = true;
     _mOnInvalidatedCallbacks
         .forEach((InvalidatedCallback listener) => listener());
+    _mOnInvalidatedCallbacks.removeWhere((e) => _mToRemoveCallbacks.contains(e));
+    _mToRemoveCallbacks.clear();
   }
 
   bool get invalid => _mInvalid;

@@ -49,7 +49,7 @@ class MyHomePage extends StatefulWidget {
 }
 
 class _MyHomePageState extends State<MyHomePage> {
-  LiveData<PagedList<Bean>> mPageListLiveData;
+  ObservableField<PagedList<Bean>> mPageListLiveData;
 
   var _scrollController = ScrollController();
 
@@ -59,7 +59,7 @@ class _MyHomePageState extends State<MyHomePage> {
     var config =
         Config(pageSize: 5, enablePlaceholders: false, initialLoadSizeHint: 10);
     mPageListLiveData =
-        LivePagedListBuilder<int, Bean>(config, factory).create();
+        PagedListBuilder<int, Bean>(config, factory).create();
     super.initState();
   }
 

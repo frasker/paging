@@ -3,7 +3,7 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter/widgets.dart';
 
 /// LiveData 类似 Android 中 LiveData
-abstract class LiveData<T> extends Listenable {
+class ObservableField<T> extends Listenable {
   static const int START_VERSION = 0;
 
   Set<VoidCallback> _listeners = Set<VoidCallback>();
@@ -73,9 +73,6 @@ abstract class LiveData<T> extends Listenable {
   /// object is not in a usable state and should be discarded (calls to
   /// [addListener] and [removeListener] will throw after the object is
   /// disposed).
-  ///
-  /// This method should only be called by the object's owner.
-  @mustCallSuper
   void dispose() {
     assert(_debugAssertNotDisposed());
     _listeners = null;

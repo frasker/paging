@@ -1,5 +1,5 @@
 import 'package:flutter/widgets.dart';
-import 'package:paging/livedata.dart';
+import 'package:paging/observable_field.dart';
 import 'package:paging/src/page_list.dart';
 import 'package:paging/src/paged_list_differ.dart';
 
@@ -23,7 +23,7 @@ class PageBuilder<T> extends StatefulWidget {
 
   final PagedListListener<T> pagedListListener;
 
-  final LiveData<PagedList<T>> pageListLiveData;
+  final ObservableField<PagedList<T>> pageListLiveData;
 
   @override
   _PageBuilderState createState() =>
