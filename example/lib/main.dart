@@ -49,7 +49,7 @@ class MyHomePage extends StatefulWidget {
 }
 
 class _MyHomePageState extends State<MyHomePage> {
-  ObservableField<PagedList<Bean>> mPageListLiveData;
+  ObservableField<PagedList<Bean>> mPageList;
 
   var _scrollController = ScrollController();
 
@@ -58,7 +58,7 @@ class _MyHomePageState extends State<MyHomePage> {
     MyFactory factory = MyFactory();
     var config =
         Config(pageSize: 5, enablePlaceholders: false, initialLoadSizeHint: 10);
-    mPageListLiveData =
+    mPageList =
         PagedListBuilder<int, Bean>(config, factory).create();
     super.initState();
   }
@@ -81,7 +81,7 @@ class _MyHomePageState extends State<MyHomePage> {
           // Center is a layout widget. It takes a single child and positions it
           // in the middle of the parent.
           child: PageBuilder<Bean>(
-            pageListLiveData: mPageListLiveData,
+            pageList: mPageList,
             builder: (context, pagedListDiffer, child) {
               return ListView.separated(
                   physics: AlwaysScrollableScrollPhysics(),

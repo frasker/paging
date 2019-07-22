@@ -8,7 +8,7 @@ import 'listupdate_callback.dart';
 class PageBuilder<T> extends StatefulWidget {
   PageBuilder(
       {Key key,
-      @required this.pageListLiveData,
+      @required this.pageList,
       @required this.builder,
       this.child,
       this.pagedListListener})
@@ -23,7 +23,7 @@ class PageBuilder<T> extends StatefulWidget {
 
   final PagedListListener<T> pagedListListener;
 
-  final ObservableField<PagedList<T>> pageListLiveData;
+  final ObservableField<PagedList<T>> pageList;
 
   @override
   _PageBuilderState createState() =>
@@ -46,7 +46,7 @@ class _PageBuilderState<T> extends State<PageBuilder> with ListUpdateCallback {
   _PageBuilderState(this.builder, this.pagedListListener);
 
   void _pageListChanged() {
-    pagedListDiffer.submitList(widget.pageListLiveData.value);
+    pagedListDiffer.submitList(widget.pageList.value);
   }
 
   @override
@@ -55,7 +55,7 @@ class _PageBuilderState<T> extends State<PageBuilder> with ListUpdateCallback {
     if (pagedListListener != null) {
       pagedListDiffer.addPagedListListener(pagedListListener);
     }
-    widget.pageListLiveData.addListener(_pageListChanged);
+    widget.pageList.addListener(_pageListChanged);
     super.initState();
   }
 
@@ -65,7 +65,7 @@ class _PageBuilderState<T> extends State<PageBuilder> with ListUpdateCallback {
     if (pagedListListener != null) {
       pagedListDiffer.removePagedListListener(pagedListListener);
     }
-    widget.pageListLiveData.dispose();
+    widget.pageList.dispose();
     super.dispose();
   }
 
