@@ -1,19 +1,20 @@
-import 'observable_field.dart';
+import 'package:livedata/livedata.dart';
+
 import 'src/data_source.dart';
 import 'src/page_list.dart';
 
-class PagedListBuilder<Key, Value> {
+class LivePagedListBuilder<Key, Value> {
   final Key mInitialLoadKey;
   final Config mConfig;
   final Factory<Key, Value> mDataSourceFactory;
   final BoundaryCallback mBoundaryCallback;
 
-  PagedListBuilder(this.mConfig, this.mDataSourceFactory,
+  LivePagedListBuilder(this.mConfig, this.mDataSourceFactory,
       {this.mInitialLoadKey, this.mBoundaryCallback});
 
   PagedList<Value> mList;
   DataSource<Key, Value> mDataSource;
-  ObservableField<PagedList<Value>> _data = ObservableField();
+  LiveData<PagedList<Value>> _data = LiveData();
 
   void invalidatedCallback() {
     _data.value = _get();
@@ -37,7 +38,7 @@ class PagedListBuilder<Key, Value> {
     return mList;
   }
 
-  ObservableField<PagedList<Value>> create() {
+  LiveData<PagedList<Value>> create() {
     _data.value = _get();
     return _data;
   }

@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:livedata/livedata.dart';
 import 'package:paging/paging.dart';
 import 'package:paging/widget/page_builder.dart';
 
@@ -49,7 +50,7 @@ class MyHomePage extends StatefulWidget {
 }
 
 class _MyHomePageState extends State<MyHomePage> {
-  ObservableField<PagedList<Bean>> mPageList;
+  LiveData<PagedList<Bean>> mPageList;
 
   var _scrollController = ScrollController();
 
@@ -59,7 +60,7 @@ class _MyHomePageState extends State<MyHomePage> {
     var config =
         Config(pageSize: 5, enablePlaceholders: false, initialLoadSizeHint: 10);
     mPageList =
-        PagedListBuilder<int, Bean>(config, factory).create();
+        LivePagedListBuilder<int, Bean>(config, factory).create();
     super.initState();
   }
 

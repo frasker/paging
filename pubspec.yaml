@@ -10,6 +10,10 @@ environment:
 dependencies:
   flutter:
     sdk: flutter
+  livedata:
+    git:
+        url: https://github.com/frasker/livedata
+        ref: 1.0.0-alpha
 
 dev_dependencies:
   flutter_test:

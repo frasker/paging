@@ -1,5 +1,5 @@
 import 'package:flutter/widgets.dart';
-import 'package:paging/observable_field.dart';
+import 'package:livedata/livedata.dart';
 import 'package:paging/src/page_list.dart';
 import 'package:paging/src/paged_list_differ.dart';
 
@@ -23,7 +23,7 @@ class PageBuilder<T> extends StatefulWidget {
 
   final PagedListListener<T> pagedListListener;
 
-  final ObservableField<PagedList<T>> pageList;
+  final LiveData<PagedList<T>> pageList;
 
   @override
   _PageBuilderState createState() =>
@@ -45,8 +45,8 @@ class _PageBuilderState<T> extends State<PageBuilder> with ListUpdateCallback {
 
   _PageBuilderState(this.builder, this.pagedListListener);
 
-  void _pageListChanged() {
-    pagedListDiffer.submitList(widget.pageList.value);
+  void _pageListChanged(PagedList pageList) {
+    pagedListDiffer.submitList(pageList);
   }
 
   @override
@@ -55,7 +55,7 @@ class _PageBuilderState<T> extends State<PageBuilder> with ListUpdateCallback {
     if (pagedListListener != null) {
       pagedListDiffer.addPagedListListener(pagedListListener);
     }
-    widget.pageList.addListener(_pageListChanged);
+    widget.pageList.observeForever(_pageListChanged);
     super.initState();
   }
 
@@ -65,7 +65,7 @@ class _PageBuilderState<T> extends State<PageBuilder> with ListUpdateCallback {
     if (pagedListListener != null) {
       pagedListDiffer.removePagedListListener(pagedListListener);
     }
-    widget.pageList.dispose();
+    widget.pageList.removeObserver(_pageListChanged);
     super.dispose();
   }
 
