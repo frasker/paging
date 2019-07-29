@@ -19,8 +19,8 @@ class WrapperItemKeyedDataSource<K, A, B> extends ItemKeyedDataSource<K, B> {
   }
 
   @override
-  void invalidate() {
-    mSource.invalidate();
+  Future<void> invalidate(){
+    return mSource.invalidate();
   }
 
   @override

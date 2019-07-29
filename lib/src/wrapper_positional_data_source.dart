@@ -19,8 +19,8 @@ class WrapperPositionalDataSource<A, B> extends PositionalDataSource<B> {
   }
 
   @override
-  void invalidate() {
-    mSource.invalidate();
+  Future<void> invalidate(){
+    return mSource.invalidate();
   }
 
   @override

@@ -18,8 +18,8 @@ class WrapperPageKeyedDataSource<K, A, B> extends PageKeyedDataSource<K, B> {
   }
 
   @override
-  void invalidate() {
-    mSource.invalidate();
+  Future<void> invalidate(){
+    return mSource.invalidate();
   }
 
   @override

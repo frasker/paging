@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'page_result.dart';
 
 /// Called when the data backing the list has become invalid. This callback is typically used
@@ -23,12 +25,18 @@ abstract class DataSource<Key, Value> {
     _mToRemoveCallbacks.add(onInvalidatedCallback);
   }
 
-  void invalidate() {
+  Future<void> invalidate() async {
     _mInvalid = true;
-    _mOnInvalidatedCallbacks
-        .forEach((InvalidatedCallback listener) => listener());
-    _mOnInvalidatedCallbacks.removeWhere((e) => _mToRemoveCallbacks.contains(e));
-    _mToRemoveCallbacks.clear();
+    var completer = Completer<void>.sync();
+    Future((){
+      _mOnInvalidatedCallbacks
+          .forEach((InvalidatedCallback listener) => listener());
+      _mOnInvalidatedCallbacks
+          .removeWhere((e) => _mToRemoveCallbacks.contains(e));
+      _mToRemoveCallbacks.clear();
+      completer.complete();
+    });
+    return completer.future;
   }
 
   bool get invalid => _mInvalid;
@@ -111,7 +119,7 @@ class _MapByPageFactory<Key, Value, ToValue> extends Factory<Key, ToValue> {
   }
 }
 
-class LoadCallbackHelper<Key,Value> {
+class LoadCallbackHelper<Key, Value> {
   static void validateInitialLoadParams(
       List<dynamic> data, int position, int totalCount) {
     if (position < 0) {
@@ -128,7 +136,7 @@ class LoadCallbackHelper<Key,Value> {
   }
 
   final int mResultType;
-  final DataSource<Key,Value> _mDataSource;
+  final DataSource<Key, Value> _mDataSource;
   final PageResultReceiver<Value> _mReceiver;
 
   bool mHasSignalled = false;

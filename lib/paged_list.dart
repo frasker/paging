@@ -14,20 +14,20 @@ class LivePagedListBuilder<Key, Value> {
 
   PagedList<Value> mList;
   DataSource<Key, Value> mDataSource;
-  LiveData<PagedList<Value>> _data = LiveData();
+  MutableLiveData<PagedList<Value>> _data = MutableLiveData();
 
-  void invalidatedCallback() {
-    _data.value = _get();
+  void invalidatedCallback() async{
+    _data.value = await _get();
   }
 
-  PagedList<Value> _get() {
+  Future<PagedList<Value>> _get() async {
     Key initializeKey = mInitialLoadKey;
     if (mList != null) {
       initializeKey = mList.getLastKey();
     }
     do {
       if (mDataSource != null) {
-        mDataSource.removeInvalidatedCallback(invalidatedCallback);
+         mDataSource.removeInvalidatedCallback(invalidatedCallback);
       }
       mDataSource = mDataSourceFactory.create();
       mDataSource.addInvalidatedCallback(invalidatedCallback);
@@ -39,7 +39,9 @@ class LivePagedListBuilder<Key, Value> {
   }
 
   LiveData<PagedList<Value>> create() {
-    _data.value = _get();
+    _get().then((value) {
+      _data.value = value;
+    });
     return _data;
   }
 }

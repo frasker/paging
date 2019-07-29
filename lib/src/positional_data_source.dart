@@ -1,8 +1,6 @@
 import 'dart:math';
 
 import 'package:paging/src/data_source.dart';
-import 'package:paging/src/data_source.dart';
-import 'package:paging/src/data_source.dart';
 
 import 'contiguous_data_source.dart';
 import 'data_source.dart';
@@ -402,8 +400,8 @@ class ContiguousWithoutPlaceholdersWrapper<Value>
   }
 
   @override
-  void invalidate() {
-    mSource.invalidate();
+  Future<void> invalidate() {
+    return mSource.invalidate();
   }
 
   @override
