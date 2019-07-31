@@ -38,8 +38,10 @@ class LivePagedListBuilder<Key, Value> {
 
     mList = PagedList.create<Key, Value>(
         mDataSource, mBoundaryCallback, mConfig, initializeKey, completer);
-    completer.future.whenComplete(() {
+    completer.future.then((result){
       _completer.complete(mList);
+    },onError: (e){
+      _completer.completeError(e);
     });
     return _completer.future;
   }

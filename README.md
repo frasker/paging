@@ -37,6 +37,6 @@ mPageList = LivePagedListBuilder<int, Bean>(config, factory).create();
  paging:
     git: 
         url: https://github.com/frasker/paging
-        ref: 1.0.0-alpha2
+        ref: 1.0.0-alpha3
 ```
 
