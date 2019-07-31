@@ -1,7 +1,5 @@
+import 'dart:async';
 import 'dart:math';
-
-import 'package:paging/src/data_source.dart';
-
 import 'contiguous_data_source.dart';
 import 'data_source.dart';
 import 'page_result.dart';
@@ -23,10 +21,15 @@ import 'wrapper_positional_data_source.dart';
 ///
 /// @param <T> Type of items being loaded by the PositionalDataSource.
 abstract class PositionalDataSource<T> extends DataSource<int, T> {
-  void dispatchLoadInitial(bool acceptCount, int requestedStartPosition,
-      int requestedLoadSize, int pageSize, PageResultReceiver<T> receiver) {
-    LoadInitialCallbackImpl<T> callback =
-        new LoadInitialCallbackImpl<T>(this, acceptCount, pageSize, receiver);
+  void dispatchLoadInitial(
+      bool acceptCount,
+      int requestedStartPosition,
+      int requestedLoadSize,
+      int pageSize,
+      PageResultReceiver<T> receiver,
+      Completer<void> completer) {
+    LoadInitialCallbackImpl<T> callback = new LoadInitialCallbackImpl<T>(
+        this, acceptCount, pageSize, receiver, completer);
 
     LoadInitialParams params = new LoadInitialParams(
         requestedStartPosition, requestedLoadSize, pageSize, acceptCount);
@@ -306,13 +309,19 @@ class LoadInitialCallbackImpl<Value> extends LoadInitialCallback<Value> {
   LoadCallbackHelper<int, Value> mCallbackHelper;
   bool _mCountingEnabled;
   int mPageSize;
+  Completer<void> _mCompleter;
 
-  LoadInitialCallbackImpl(PositionalDataSource<Value> dataSource,
-      bool countingEnabled, int pageSize, PageResultReceiver<Value> receiver) {
+  LoadInitialCallbackImpl(
+      PositionalDataSource<Value> dataSource,
+      bool countingEnabled,
+      int pageSize,
+      PageResultReceiver<Value> receiver,
+      Completer<void> completer) {
     this.mCallbackHelper =
         LoadCallbackHelper<int, Value>(dataSource, PageResult.INIT, receiver);
     this._mCountingEnabled = countingEnabled;
     mPageSize = pageSize;
+    _mCompleter = completer;
     if (mPageSize < 1) {
       throw new Exception("Page size must be non-negative");
     }
@@ -335,6 +344,9 @@ class LoadInitialCallbackImpl<Value> extends LoadInitialCallback<Value> {
       }
       mCallbackHelper
           .dispatchResultToReceiver(PageResult<Value>(data, position));
+      _mCompleter.complete();
+    } else {
+      _mCompleter.completeError(null);
     }
   }
 
@@ -395,8 +407,8 @@ class ContiguousWithoutPlaceholdersWrapper<Value>
   }
 
   @override
-  void removeInvalidatedCallback(onInvalidatedCallback) {
-    mSource.removeInvalidatedCallback(onInvalidatedCallback);
+  void removeInvalidatedCallback() {
+    mSource.removeInvalidatedCallback();
   }
 
   @override
@@ -431,15 +443,20 @@ class ContiguousWithoutPlaceholdersWrapper<Value>
   }
 
   @override
-  void dispatchLoadInitial(int position, int initialLoadSize, int pageSize,
-      bool enablePlaceholders, PageResultReceiver<Value> receiver) {
+  void dispatchLoadInitial(
+      int position,
+      int initialLoadSize,
+      int pageSize,
+      bool enablePlaceholders,
+      PageResultReceiver<Value> receiver,
+      Completer<void> completer) {
     final int convertPosition = position == null ? 0 : position;
 
     // Note enablePlaceholders will be false here, but we don't have a way to communicate
     // this to PositionalDataSource. This is fine, because only the list and its position
     // offset will be consumed by the LoadInitialCallback.
     mSource.dispatchLoadInitial(
-        false, convertPosition, initialLoadSize, pageSize, receiver);
+        false, convertPosition, initialLoadSize, pageSize, receiver, completer);
   }
 
   @override

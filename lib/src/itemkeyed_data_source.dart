@@ -1,8 +1,9 @@
+import 'dart:async';
+
 import 'contiguous_data_source.dart';
 import 'data_source.dart';
 import 'page_result.dart';
 import 'wrapper_itemkeyed_data_source.dart';
-
 
 /// Incremental data loader for paging keyed content, where loaded content uses previously loaded
 /// items as input to future loads.
@@ -48,10 +49,16 @@ abstract class ItemKeyedDataSource<Key, Value>
   Key getKeyByItem(Value item);
 
   @override
-  void dispatchLoadInitial(Key key, int initialLoadSize, int pageSize,
-      bool enablePlaceholders, PageResultReceiver<Value> receiver) {
+  void dispatchLoadInitial(
+      Key key,
+      int initialLoadSize,
+      int pageSize,
+      bool enablePlaceholders,
+      PageResultReceiver<Value> receiver,
+      Completer<void> completer) {
     LoadInitialCallbackImpl<Key, Value> callback =
-        LoadInitialCallbackImpl<Key, Value>(this, enablePlaceholders, receiver);
+        LoadInitialCallbackImpl<Key, Value>(
+            this, enablePlaceholders, receiver, completer);
     loadInitial(
         LoadInitialParams<Key>(key, initialLoadSize, enablePlaceholders),
         callback);
@@ -254,18 +261,26 @@ abstract class LoadInitialCallback<Value> extends LoadCallback<Value> {
 class LoadInitialCallbackImpl<Key, Value> extends LoadInitialCallback<Value> {
   LoadCallbackHelper<Key, Value> mCallbackHelper;
   bool _mCountingEnabled;
+  Completer<void> _mCompleter;
 
-  LoadInitialCallbackImpl(ItemKeyedDataSource<Key, Value> dataSource,
-      bool countingEnabled, PageResultReceiver<Value> receiver) {
+  LoadInitialCallbackImpl(
+      ItemKeyedDataSource<Key, Value> dataSource,
+      bool countingEnabled,
+      PageResultReceiver<Value> receiver,
+      Completer<void> completer) {
     this.mCallbackHelper =
         LoadCallbackHelper(dataSource, PageResult.INIT, receiver);
     this._mCountingEnabled = countingEnabled;
+    this._mCompleter = completer;
   }
 
   @override
   void onResult(List<Value> data) {
     if (!mCallbackHelper.dispatchInvalidResultIfInvalid()) {
       mCallbackHelper.dispatchResultToReceiver(PageResult<Value>(data, 0));
+      _mCompleter.complete();
+    } else {
+      _mCompleter.completeError(null);
     }
   }
 
@@ -282,6 +297,9 @@ class LoadInitialCallbackImpl<Key, Value> extends LoadInitialCallback<Value> {
         mCallbackHelper
             .dispatchResultToReceiver(PageResult<Value>(data, position));
       }
+      _mCompleter.complete();
+    } else {
+      _mCompleter.completeError(null);
     }
   }
 }

@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'data_source.dart';
 import 'page_result.dart';
 
@@ -8,7 +10,7 @@ abstract class ContiguousDataSource<Key, Value> extends DataSource<Key, Value> {
   }
 
   void dispatchLoadInitial(Key key, int initialLoadSize, int pageSize,
-      bool enablePlaceholders, PageResultReceiver<Value> receiver);
+      bool enablePlaceholders, PageResultReceiver<Value> receiver,Completer<void> completer);
 
   void dispatchLoadAfter(int currentEndIndex, Value currentEndItem,
       int pageSize, PageResultReceiver<Value> receiver);

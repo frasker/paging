@@ -39,15 +39,6 @@ packages:
     description: flutter
     source: sdk
     version: "0.0.0"
-  livedata:
-    dependency: "direct main"
-    description:
-      path: "."
-      ref: "1.0.0-alpha"
-      resolved-ref: b903d3ca78942754e65ca5c580eb33839fc6092e
-      url: "https://github.com/frasker/livedata"
-    source: git
-    version: "0.0.1"
   matcher:
     dependency: transitive
     description:

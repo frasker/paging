@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:livedata/livedata.dart';
 import 'package:paging/paging.dart';
 import 'package:paging/widget/page_builder.dart';
 
@@ -50,7 +49,7 @@ class MyHomePage extends StatefulWidget {
 }
 
 class _MyHomePageState extends State<MyHomePage> {
-  LiveData<PagedList<Bean>> mPageList;
+  ValueNotifier<PagedList<Bean>> mPageList;
 
   var _scrollController = ScrollController();
 

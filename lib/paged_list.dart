@@ -1,5 +1,6 @@
-import 'package:livedata/livedata.dart';
+import 'dart:async';
 
+import 'package:flutter/widgets.dart';
 import 'src/data_source.dart';
 import 'src/page_list.dart';
 
@@ -14,33 +15,38 @@ class LivePagedListBuilder<Key, Value> {
 
   PagedList<Value> mList;
   DataSource<Key, Value> mDataSource;
-  MutableLiveData<PagedList<Value>> _data = MutableLiveData();
+  ValueNotifier<PagedList<Value>> _data = ValueNotifier(null);
 
-  void invalidatedCallback() async{
-    _data.value = await _get();
+  void _invalidatedCallback(Completer<void> completer) {
+    _get(completer).then((data) {
+      _data.value = data;
+    });
   }
 
-  Future<PagedList<Value>> _get() async {
+  Future<PagedList<Value>> _get(Completer<void> completer) {
+    final Completer<PagedList<Value>> _completer = Completer<PagedList<Value>>();
     Key initializeKey = mInitialLoadKey;
     if (mList != null) {
       initializeKey = mList.getLastKey();
     }
-    do {
-      if (mDataSource != null) {
-         mDataSource.removeInvalidatedCallback(invalidatedCallback);
-      }
-      mDataSource = mDataSourceFactory.create();
-      mDataSource.addInvalidatedCallback(invalidatedCallback);
 
-      mList = PagedList.create<Key, Value>(
-          mDataSource, mBoundaryCallback, mConfig, initializeKey);
-    } while (mList.isDetached());
-    return mList;
+    if (mDataSource != null) {
+      mDataSource.removeInvalidatedCallback();
+    }
+    mDataSource = mDataSourceFactory.create();
+    mDataSource.addInvalidatedCallback(_invalidatedCallback);
+
+    mList = PagedList.create<Key, Value>(
+        mDataSource, mBoundaryCallback, mConfig, initializeKey, completer);
+    completer.future.whenComplete(() {
+      _completer.complete(mList);
+    });
+    return _completer.future;
   }
 
-  LiveData<PagedList<Value>> create() {
-    _get().then((value) {
-      _data.value = value;
+  ValueNotifier<PagedList<Value>> create() {
+    _get(Completer<void>()).then((data) {
+      _data.value = data;
     });
     return _data;
   }

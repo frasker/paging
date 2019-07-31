@@ -13,12 +13,12 @@ class WrapperPageKeyedDataSource<K, A, B> extends PageKeyedDataSource<K, B> {
   }
 
   @override
-  void removeInvalidatedCallback(onInvalidatedCallback) {
-    mSource.removeInvalidatedCallback(onInvalidatedCallback);
+  void removeInvalidatedCallback() {
+    mSource.removeInvalidatedCallback();
   }
 
   @override
-  Future<void> invalidate(){
+  Future<void> invalidate() {
     return mSource.invalidate();
   }
 

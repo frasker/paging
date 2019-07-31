@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'dart:math';
 
 import 'contiguous_data_source.dart';
@@ -43,8 +44,12 @@ abstract class PagedList<T> {
     mRequiredRemainder = _mConfig.prefetchDistance * 2 + _mConfig.pageSize;
   }
 
-  static PagedList<T> create<K, T>(DataSource<K, T> dataSource,
-      BoundaryCallback<T> boundaryCallback, Config config, K key) {
+  static PagedList<T> create<K, T>(
+      DataSource<K, T> dataSource,
+      BoundaryCallback<T> boundaryCallback,
+      Config config,
+      K key,
+      Completer<void> completer) {
     if (dataSource.isContiguous() || !config.enablePlaceholders) {
       int lastLoad = ContiguousPagedList.LAST_LOAD_UNSPECIFIED;
       if (!dataSource.isContiguous()) {
@@ -58,10 +63,10 @@ abstract class PagedList<T> {
       ContiguousDataSource<K, T> configDataSource =
           dataSource as ContiguousDataSource<K, T>;
       return new ContiguousPagedList<K, T>(
-          configDataSource, boundaryCallback, config, key, lastLoad);
+          configDataSource, boundaryCallback, config, key, lastLoad, completer);
     } else {
       return new TiledPagedList<T>(dataSource as PositionalDataSource<T>,
-          boundaryCallback, config, (key != null) ? key as int : 0);
+          boundaryCallback, config, (key != null) ? key as int : 0, completer);
     }
   }
 

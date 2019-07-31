@@ -14,12 +14,12 @@ class WrapperItemKeyedDataSource<K, A, B> extends ItemKeyedDataSource<K, B> {
   }
 
   @override
-  void removeInvalidatedCallback(onInvalidatedCallback) {
-    mSource.removeInvalidatedCallback(onInvalidatedCallback);
+  void removeInvalidatedCallback() {
+    mSource.removeInvalidatedCallback();
   }
 
   @override
-  Future<void> invalidate(){
+  Future<void> invalidate() {
     return mSource.invalidate();
   }
 

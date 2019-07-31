@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'dart:math';
 
 import 'contiguous_data_source.dart';
@@ -29,8 +30,13 @@ class ContiguousPagedList<K, V> extends PagedList<V>
 
   PageResultReceiver<V> mReceiver;
 
-  ContiguousPagedList(ContiguousDataSource<K, V> dataSource,
-      BoundaryCallback<V> boundaryCallback, Config config, K key, int lastLoad)
+  ContiguousPagedList(
+      ContiguousDataSource<K, V> dataSource,
+      BoundaryCallback<V> boundaryCallback,
+      Config config,
+      K key,
+      int lastLoad,
+      Completer<void> completer)
       : super(PagedStorage<V>(), boundaryCallback, config) {
     mDataSource = dataSource;
     mLastLoad = lastLoad;
@@ -40,8 +46,13 @@ class ContiguousPagedList<K, V> extends PagedList<V>
     if (mDataSource.invalid) {
       detach();
     } else {
-      mDataSource.dispatchLoadInitial(key, getConfig().initialLoadSizeHint,
-          getConfig().pageSize, getConfig().enablePlaceholders, mReceiver);
+      mDataSource.dispatchLoadInitial(
+          key,
+          getConfig().initialLoadSizeHint,
+          getConfig().pageSize,
+          getConfig().enablePlaceholders,
+          mReceiver,
+          completer);
     }
     mShouldTrim = mDataSource.supportsPageDropping() &&
         getConfig().maxSize != Config.MAX_SIZE_UNBOUNDED;

@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'dart:math';
 
 import 'package:paging/src/data_source.dart';
@@ -12,8 +13,12 @@ class TiledPagedList<T> extends PagedList<T> with PagedStorageCallback {
 
   PageResultReceiver<T> mReceiver;
 
-  TiledPagedList(PositionalDataSource<T> dataSource,
-      BoundaryCallback<T> boundaryCallback, Config config, int position)
+  TiledPagedList(
+      PositionalDataSource<T> dataSource,
+      BoundaryCallback<T> boundaryCallback,
+      Config config,
+      int position,
+      Completer<void> completer)
       : super(PagedStorage<T>(), boundaryCallback, config) {
     mReceiver = _MyPageResultReceiver<T>(this);
 
@@ -31,8 +36,8 @@ class TiledPagedList<T> extends PagedList<T> with PagedStorageCallback {
       final int idealStart = position - firstLoadSize ~/ 2;
       final int roundedPageStart = max(0, idealStart ~/ pageSize * pageSize);
 
-      mDataSource.dispatchLoadInitial(
-          true, roundedPageStart, firstLoadSize, pageSize, mReceiver);
+      mDataSource.dispatchLoadInitial(true, roundedPageStart, firstLoadSize,
+          pageSize, mReceiver, completer);
     }
   }
 

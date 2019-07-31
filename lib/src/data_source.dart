@@ -8,34 +8,30 @@ import 'page_result.dart';
 /// This callback will be invoked on the thread that calls {@link #invalidate()}. It is valid
 /// for the data source to invalidate itself during its load methods, or for an outside
 /// source to invalidate it.
-typedef InvalidatedCallback = Function();
+typedef InvalidatedCallback = void Function(Completer<void> completer);
 
 abstract class DataSource<Key, Value> {
   bool _mInvalid = false;
-  Set<InvalidatedCallback> _mOnInvalidatedCallbacks = Set();
-  Set<InvalidatedCallback> _mToRemoveCallbacks = Set();
+
+  InvalidatedCallback _mCallback;
 
   bool isContiguous();
 
   void addInvalidatedCallback(InvalidatedCallback onInvalidatedCallback) {
-    _mOnInvalidatedCallbacks.add(onInvalidatedCallback);
+    _mCallback = onInvalidatedCallback;
   }
 
-  void removeInvalidatedCallback(InvalidatedCallback onInvalidatedCallback) {
-    _mToRemoveCallbacks.add(onInvalidatedCallback);
+  void removeInvalidatedCallback() {
+    _mCallback = null;
   }
 
-  Future<void> invalidate() async {
+  Future<void> invalidate() {
     _mInvalid = true;
-    var completer = Completer<void>.sync();
-    Future((){
-      _mOnInvalidatedCallbacks
-          .forEach((InvalidatedCallback listener) => listener());
-      _mOnInvalidatedCallbacks
-          .removeWhere((e) => _mToRemoveCallbacks.contains(e));
-      _mToRemoveCallbacks.clear();
-      completer.complete();
-    });
+    Completer<void> completer = Completer<void>();
+    if (_mCallback != null) {
+      _mCallback(completer);
+    }
+    _mCallback = null;
     return completer.future;
   }
 

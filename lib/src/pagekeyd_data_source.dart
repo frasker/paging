@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:paging/src/data_source.dart';
 import 'package:paging/src/data_source.dart';
 
@@ -60,12 +62,18 @@ abstract class PageKeyedDataSource<Key, Value>
   }
 
   @override
-  void dispatchLoadInitial(Key key, int initialLoadSize, int pageSize,
-      bool enablePlaceholders, PageResultReceiver<Value> receiver) {
+  void dispatchLoadInitial(
+      Key key,
+      int initialLoadSize,
+      int pageSize,
+      bool enablePlaceholders,
+      PageResultReceiver<Value> receiver,
+      Completer<void> completer) {
     LoadInitialCallbackImpl<Key, Value> callback =
-        LoadInitialCallbackImpl<Key, Value>(this, enablePlaceholders, receiver);
-    loadInitial(LoadInitialParams<Key>(initialLoadSize, enablePlaceholders),
-        callback);
+        LoadInitialCallbackImpl<Key, Value>(
+            this, enablePlaceholders, receiver, completer);
+    loadInitial(
+        LoadInitialParams<Key>(initialLoadSize, enablePlaceholders), callback);
   }
 
   void loadInitial(
@@ -100,7 +108,8 @@ abstract class PageKeyedDataSource<Key, Value>
   }
 
   @override
-  PageKeyedDataSource<Key, ToValue> map<ToValue>(ToValue Function(Value data) func) {
+  PageKeyedDataSource<Key, ToValue> map<ToValue>(
+      ToValue Function(Value data) func) {
     return mapByPage<ToValue>(
         DataSource.createListFunction<Value, ToValue>(func));
   }
@@ -178,13 +187,18 @@ class LoadInitialCallbackImpl<Key, Value>
   LoadCallbackHelper<Key, Value> mCallbackHelper;
   PageKeyedDataSource<Key, Value> _mDataSource;
   bool _mCountingEnabled;
+  Completer<void> _mCompleter;
 
-  LoadInitialCallbackImpl(PageKeyedDataSource<Key, Value> dataSource,
-      bool countingEnabled, PageResultReceiver<Value> receiver) {
+  LoadInitialCallbackImpl(
+      PageKeyedDataSource<Key, Value> dataSource,
+      bool countingEnabled,
+      PageResultReceiver<Value> receiver,
+      Completer<void> completer) {
     this.mCallbackHelper =
         LoadCallbackHelper<Key, Value>(dataSource, PageResult.INIT, receiver);
     this._mDataSource = dataSource;
     this._mCountingEnabled = countingEnabled;
+    this._mCompleter = completer;
   }
 
   @override
@@ -192,6 +206,9 @@ class LoadInitialCallbackImpl<Key, Value>
     if (!mCallbackHelper.dispatchInvalidResultIfInvalid()) {
       _mDataSource.initKeys(previousPageKey, nextPageKey);
       mCallbackHelper.dispatchResultToReceiver(PageResult<Value>(data, 0));
+      _mCompleter.complete();
+    } else {
+      _mCompleter.completeError(null);
     }
   }
 
@@ -209,7 +226,8 @@ class LoadInitialCallbackImpl<Key, Value>
         mCallbackHelper.dispatchResultToReceiver(PageResult<Value>(data, 0,
             leadingNulls: position, trailingNulls: trailingUnloadedCount));
       } else {
-        mCallbackHelper.dispatchResultToReceiver(PageResult<Value>(data, position));
+        mCallbackHelper
+            .dispatchResultToReceiver(PageResult<Value>(data, position));
       }
     }
   }
@@ -244,7 +262,8 @@ class LoadCallbackImpl<Key, Value> extends LoadCallback<Key, Value> {
 
   LoadCallbackImpl(PageKeyedDataSource<Key, Value> dataSource, int type,
       PageResultReceiver<Value> receiver) {
-    _mCallbackHelper = LoadCallbackHelper<Key, Value>(dataSource, type, receiver);
+    _mCallbackHelper =
+        LoadCallbackHelper<Key, Value>(dataSource, type, receiver);
     _mDataSource = dataSource;
   }
 
