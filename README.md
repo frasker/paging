@@ -6,7 +6,7 @@ paging 是针对flutter提供的分页加载库，思想和实现源自android j
 
 具体参见demo，和android paging不一样的地方在于针对flutter提供了PageBuilder控件
 ```
-// 创建LiveData<PageList>
+// 创建ValueNotifier<PageList>
 MyFactory factory = MyFactory();
 var config = Config(pageSize: 5, enablePlaceholders: false, initialLoadSizeHint: 10);
 mPageList = LivePagedListBuilder<int, Bean>(config, factory).create();
@@ -37,6 +37,6 @@ mPageList = LivePagedListBuilder<int, Bean>(config, factory).create();
  paging:
     git: 
         url: https://github.com/frasker/paging
-        ref: 1.0.0-alpha
+        ref: 1.0.0-alpha1
 ```
 
