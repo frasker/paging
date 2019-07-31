@@ -35,6 +35,11 @@ class WrapperPositionalDataSource<A, B> extends PositionalDataSource<B> {
   void loadRange(LoadRangeParams params, LoadRangeCallback<B> callback) {
     mSource.loadRange(params, _MyLoadRangeCallback<A, B>(callback,mListFunction));
   }
+
+  @override
+  void onResultInitialFailed() {
+    mSource.onResultInitialFailed();
+  }
 }
 
 class _MyLoadInitialCallback<A, B> extends LoadInitialCallback<A> {
@@ -52,6 +57,11 @@ class _MyLoadInitialCallback<A, B> extends LoadInitialCallback<A> {
   void onResultInitial(List<A> data, int position, int totalCount) {
     callback.onResultInitial(
         DataSource.convert<A, B>(mListFunction, data), position, totalCount);
+  }
+
+  @override
+  void onResultInitialFailed() {
+    callback.onResultInitialFailed();
   }
 }
 

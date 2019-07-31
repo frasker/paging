@@ -75,6 +75,11 @@ class _MyLoadInitialCallback<K, A, B> extends LoadInitialCallback<A> {
     callback.onResultInitial(
         mDataSource.convertWithStashedKeys(data), position, totalCount);
   }
+
+  @override
+  void onResultInitialFailed() {
+    callback.onResultInitialFailed();
+  }
 }
 
 class _MyBeforeLoadCallback<K, A, B> extends LoadCallback<A> {

@@ -256,6 +256,9 @@ abstract class LoadInitialCallback<Value> extends LoadCallback<Value> {
   ///                   {@code data}.
   ///
   void onResultInitial(List<Value> data, int position, int totalCount);
+
+  /// Called to pass load finished from a DataSource.
+  void onResultInitialFailed();
 }
 
 class LoadInitialCallbackImpl<Key, Value> extends LoadInitialCallback<Value> {
@@ -301,6 +304,11 @@ class LoadInitialCallbackImpl<Key, Value> extends LoadInitialCallback<Value> {
     } else {
       _mCompleter.completeError(null);
     }
+  }
+
+  @override
+  void onResultInitialFailed() {
+    _mCompleter.completeError(null);
   }
 }
 

@@ -63,6 +63,11 @@ class _MyLoadInitialCallback<K, A, B> extends LoadInitialCallback<K, A> {
     callback.onResultInitial(DataSource.convert<A, B>(mListFunction, data),
         position, totalCount, previousPageKey, nextPageKey);
   }
+
+  @override
+  void onResultInitialFailed() {
+    callback.onResultInitialFailed();
+  }
 }
 
 class _MyBeforeLoadCallback<K, A, B> extends LoadCallback<K, A> {

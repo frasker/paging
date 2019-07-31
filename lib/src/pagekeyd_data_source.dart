@@ -180,6 +180,9 @@ abstract class LoadInitialCallback<Key, Value> {
   /// @param nextPageKey Key for page after the initial load result, or {@code null} if no
   ///                        more data can be loaded after.
   void onResult(List<Value> data, Key previousPageKey, Key nextPageKey);
+  
+  /// Called to pass load finished from a DataSource.
+  void onResultInitialFailed();
 }
 
 class LoadInitialCallbackImpl<Key, Value>
@@ -229,7 +232,15 @@ class LoadInitialCallbackImpl<Key, Value>
         mCallbackHelper
             .dispatchResultToReceiver(PageResult<Value>(data, position));
       }
+      _mCompleter.complete();
+    } else {
+      _mCompleter.completeError(null);
     }
+  }
+
+  @override
+  void onResultInitialFailed() {
+    _mCompleter.completeError(null);
   }
 }
 

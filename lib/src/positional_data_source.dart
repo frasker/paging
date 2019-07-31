@@ -71,6 +71,9 @@ abstract class PositionalDataSource<T> extends DataSource<int, T> {
   /// @param callback Callback that receives loaded data.
   void loadRange(LoadRangeParams params, LoadRangeCallback<T> callback);
 
+  /// Called to pass load finished from a DataSource.
+  void onResultInitialFailed();
+
   @override
   bool isContiguous() {
     return false;
@@ -285,6 +288,9 @@ abstract class LoadInitialCallback<T> {
   ///                 items before the items in data that can be provided by this DataSource,
   ///                 pass {@code N}.
   void onResult(List<T> data, int position);
+
+  /// Called to pass load finished from a DataSource.
+  void onResultInitialFailed();
 }
 
 /// Callback for PositionalDataSource {@link #loadRange(LoadRangeParams, LoadRangeCallback)}
@@ -371,7 +377,15 @@ class LoadInitialCallbackImpl<Value> extends LoadInitialCallback<Value> {
         mCallbackHelper
             .dispatchResultToReceiver(PageResult<Value>(data, position));
       }
+      _mCompleter.complete();
+    } else {
+      _mCompleter.completeError(null);
     }
+  }
+
+  @override
+  void onResultInitialFailed() {
+    _mCompleter.completeError(null);
   }
 }
 
