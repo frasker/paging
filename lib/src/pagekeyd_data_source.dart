@@ -1,8 +1,6 @@
 import 'dart:async';
 
 import 'package:paging/src/data_source.dart';
-import 'package:paging/src/data_source.dart';
-
 import 'contiguous_data_source.dart';
 import 'data_source.dart';
 import 'page_result.dart';

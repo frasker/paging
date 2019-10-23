@@ -56,26 +56,26 @@ abstract class ItemKeyedDataSource<Key, Value>
       bool enablePlaceholders,
       PageResultReceiver<Value> receiver,
       Completer<void> completer) {
-    LoadInitialCallbackImpl<Key, Value> callback =
-        LoadInitialCallbackImpl<Key, Value>(
+    ItemKeyedLoadInitialCallbackImpl<Key, Value> callback =
+        ItemKeyedLoadInitialCallbackImpl<Key, Value>(
             this, enablePlaceholders, receiver, completer);
     loadInitial(
-        LoadInitialParams<Key>(key, initialLoadSize, enablePlaceholders),
+        ItemKeyedLoadInitialParams<Key>(key, initialLoadSize, enablePlaceholders),
         callback);
   }
 
   @override
   void dispatchLoadAfter(int currentEndIndex, Value currentEndItem,
       int pageSize, PageResultReceiver<Value> receiver) {
-    loadAfter(new LoadParams<Key>(getKeyByItem(currentEndItem), pageSize),
-        new LoadCallbackImpl<Key, Value>(this, PageResult.APPEND, receiver));
+    loadAfter(new ItemKeyedLoadParams<Key>(getKeyByItem(currentEndItem), pageSize),
+        new ItemKeyedLoadCallbackImpl<Key, Value>(this, PageResult.APPEND, receiver));
   }
 
   @override
   void dispatchLoadBefore(int currentBeginIndex, Value currentBeginItem,
       int pageSize, PageResultReceiver<Value> receiver) {
-    loadBefore(LoadParams<Key>(getKeyByItem(currentBeginItem), pageSize),
-        new LoadCallbackImpl<Key, Value>(this, PageResult.PREPEND, receiver));
+    loadBefore(ItemKeyedLoadParams<Key>(getKeyByItem(currentBeginItem), pageSize),
+        new ItemKeyedLoadCallbackImpl<Key, Value>(this, PageResult.PREPEND, receiver));
   }
 
   /// Load initial data.
@@ -97,7 +97,7 @@ abstract class ItemKeyedDataSource<Key, Value>
   /// @param params Parameters for initial load, including initial key and requested size.
   /// @param callback Callback that receives initial load data.
   void loadInitial(
-      LoadInitialParams<Key> params, LoadInitialCallback<Value> callback);
+      ItemKeyedLoadInitialParams<Key> params, ItemKeyedLoadInitialCallback<Value> callback);
 
   /// Load list data before the key specified in {@link LoadParams#key LoadParams.key}.
   /// <p>
@@ -116,7 +116,7 @@ abstract class ItemKeyedDataSource<Key, Value>
   ///
   /// @param params Parameters for the load, including the key to load before, and requested size.
   /// @param callback Callback that receives loaded data.
-  void loadBefore(LoadParams<Key> params, LoadCallback<Value> callback);
+  void loadBefore(ItemKeyedLoadParams<Key> params, ItemKeyedLoadCallback<Value> callback);
 
   /// Load list data after the key specified in {@link LoadParams#key LoadParams.key}.
   /// <p>
@@ -132,7 +132,7 @@ abstract class ItemKeyedDataSource<Key, Value>
   ///
   /// @param params Parameters for the load, including the key to load after, and requested size.
   /// @param callback Callback that receives loaded data.
-  void loadAfter(LoadParams<Key> params, LoadCallback<Value> callback);
+  void loadAfter(ItemKeyedLoadParams<Key> params, ItemKeyedLoadCallback<Value> callback);
 
   @override
   ItemKeyedDataSource<Key, ToValue> mapByPage<ToValue>(
@@ -151,7 +151,7 @@ abstract class ItemKeyedDataSource<Key, Value>
 /// Holder object for inputs to {@link #loadInitial(LoadInitialParams, LoadInitialCallback)}.
 ///
 /// @param <Key> Type of data used to query Value types out of the DataSource.
-class LoadInitialParams<Key> {
+class ItemKeyedLoadInitialParams<Key> {
   /// Load items around this key, or at the beginning of the data set if {@code null} is
   /// passed.
   /// <p>
@@ -168,7 +168,7 @@ class LoadInitialParams<Key> {
   /// {@link LoadInitialCallback#onResult(List, int, int)} will be ignored.
   final bool placeholdersEnabled;
 
-  LoadInitialParams(this.requestedInitialKey, this.requestedLoadSize,
+  ItemKeyedLoadInitialParams(this.requestedInitialKey, this.requestedLoadSize,
       this.placeholdersEnabled);
 }
 
@@ -176,7 +176,7 @@ class LoadInitialParams<Key> {
 /// and {@link #loadAfter(LoadParams, LoadCallback)}.
 ///
 /// @param <Key> Type of data used to query Value types out of the DataSource.
-class LoadParams<Key> {
+class ItemKeyedLoadParams<Key> {
   /// Load items before/after this key.
   /// <p>
   /// Returned data must begin directly adjacent to this position.
@@ -188,7 +188,7 @@ class LoadParams<Key> {
   /// network data source where the backend defines page size.
   final int requestedLoadSize;
 
-  LoadParams(this.key, this.requestedLoadSize);
+  ItemKeyedLoadParams(this.key, this.requestedLoadSize);
 }
 
 /// Callback for ItemKeyedDataSource {@link #loadBefore(LoadParams, LoadCallback)}
@@ -201,7 +201,7 @@ class LoadParams<Key> {
 /// temporary, recoverable error states (such as a network error that can be retried).
 ///
 /// @param <Value> Type of items being loaded.
-abstract class LoadCallback<Value> {
+abstract class ItemKeyedLoadCallback<Value> {
   /// Called to pass loaded data from a DataSource.
   /// <p>
   /// Call this method from your ItemKeyedDataSource's
@@ -234,7 +234,7 @@ abstract class LoadCallback<Value> {
 /// temporary, recoverable error states (such as a network error that can be retried).
 ///
 /// @param <Value> Type of items being loaded.
-abstract class LoadInitialCallback<Value> extends LoadCallback<Value> {
+abstract class ItemKeyedLoadInitialCallback<Value> extends ItemKeyedLoadCallback<Value> {
   /// Called to pass initial load state from a DataSource.
   /// <p>
   /// Call this method from your DataSource's {@code loadInitial} function to return data,
@@ -261,12 +261,12 @@ abstract class LoadInitialCallback<Value> extends LoadCallback<Value> {
   void onResultInitialFailed();
 }
 
-class LoadInitialCallbackImpl<Key, Value> extends LoadInitialCallback<Value> {
+class ItemKeyedLoadInitialCallbackImpl<Key, Value> extends ItemKeyedLoadInitialCallback<Value> {
   LoadCallbackHelper<Key, Value> mCallbackHelper;
   bool _mCountingEnabled;
   Completer<void> _mCompleter;
 
-  LoadInitialCallbackImpl(
+  ItemKeyedLoadInitialCallbackImpl(
       ItemKeyedDataSource<Key, Value> dataSource,
       bool countingEnabled,
       PageResultReceiver<Value> receiver,
@@ -312,10 +312,10 @@ class LoadInitialCallbackImpl<Key, Value> extends LoadInitialCallback<Value> {
   }
 }
 
-class LoadCallbackImpl<Key, Value> extends LoadCallback<Value> {
+class ItemKeyedLoadCallbackImpl<Key, Value> extends ItemKeyedLoadCallback<Value> {
   LoadCallbackHelper<Key, Value> _mCallbackHelper;
 
-  LoadCallbackImpl(ItemKeyedDataSource<Key, Value> dataSource, int type,
+  ItemKeyedLoadCallbackImpl(ItemKeyedDataSource<Key, Value> dataSource, int type,
       PageResultReceiver<Value> receiver) {
     _mCallbackHelper =
         LoadCallbackHelper<Key, Value>(dataSource, type, receiver);

@@ -42,25 +42,25 @@ class WrapperItemKeyedDataSource<K, A, B> extends ItemKeyedDataSource<K, B> {
   }
 
   @override
-  void loadAfter(LoadParams<K> params, LoadCallback<B> callback) {
+  void loadAfter(ItemKeyedLoadParams<K> params, ItemKeyedLoadCallback<B> callback) {
     mSource.loadAfter(params, _MyAfterLoadCallback<K, A, B>(callback, this));
   }
 
   @override
-  void loadBefore(LoadParams<K> params, LoadCallback<B> callback) {
+  void loadBefore(ItemKeyedLoadParams<K> params, ItemKeyedLoadCallback<B> callback) {
     mSource.loadBefore(params, _MyBeforeLoadCallback<K, A, B>(callback, this));
   }
 
   @override
   void loadInitial(
-      LoadInitialParams<K> params, LoadInitialCallback<B> callback) {
+      ItemKeyedLoadInitialParams<K> params, ItemKeyedLoadInitialCallback<B> callback) {
     mSource.loadInitial(
         params, _MyLoadInitialCallback<K, A, B>(callback, this));
   }
 }
 
-class _MyLoadInitialCallback<K, A, B> extends LoadInitialCallback<A> {
-  final LoadInitialCallback<B> callback;
+class _MyLoadInitialCallback<K, A, B> extends ItemKeyedLoadInitialCallback<A> {
+  final ItemKeyedLoadInitialCallback<B> callback;
   final WrapperItemKeyedDataSource<K, A, B> mDataSource;
 
   _MyLoadInitialCallback(this.callback, this.mDataSource);
@@ -82,8 +82,8 @@ class _MyLoadInitialCallback<K, A, B> extends LoadInitialCallback<A> {
   }
 }
 
-class _MyBeforeLoadCallback<K, A, B> extends LoadCallback<A> {
-  final LoadCallback<B> callback;
+class _MyBeforeLoadCallback<K, A, B> extends ItemKeyedLoadCallback<A> {
+  final ItemKeyedLoadCallback<B> callback;
   final WrapperItemKeyedDataSource<K, A, B> mDataSource;
 
   _MyBeforeLoadCallback(this.callback, this.mDataSource);
@@ -94,8 +94,8 @@ class _MyBeforeLoadCallback<K, A, B> extends LoadCallback<A> {
   }
 }
 
-class _MyAfterLoadCallback<K, A, B> extends LoadCallback<A> {
-  final LoadCallback<B> callback;
+class _MyAfterLoadCallback<K, A, B> extends ItemKeyedLoadCallback<A> {
+  final ItemKeyedLoadCallback<B> callback;
   final WrapperItemKeyedDataSource<K, A, B> mDataSource;
 
   _MyAfterLoadCallback(this.callback, this.mDataSource);

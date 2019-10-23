@@ -27,7 +27,7 @@ class WrapperPositionalDataSource<A, B> extends PositionalDataSource<B> {
   bool get invalid => mSource.invalid;
 
   @override
-  void loadInitial(LoadInitialParams params, LoadInitialCallback<B> callback) {
+  void loadInitial(PositionalLoadInitialParams params, PositionalLoadInitialCallback<B> callback) {
     mSource.loadInitial(params, _MyLoadInitialCallback<A, B>(callback,mListFunction));
   }
 
@@ -42,8 +42,8 @@ class WrapperPositionalDataSource<A, B> extends PositionalDataSource<B> {
   }
 }
 
-class _MyLoadInitialCallback<A, B> extends LoadInitialCallback<A> {
-  final LoadInitialCallback<B> callback;
+class _MyLoadInitialCallback<A, B> extends PositionalLoadInitialCallback<A> {
+  final PositionalLoadInitialCallback<B> callback;
   final List<B> Function(List<A> data) mListFunction;
 
   _MyLoadInitialCallback(this.callback, this.mListFunction);

@@ -28,10 +28,10 @@ abstract class PositionalDataSource<T> extends DataSource<int, T> {
       int pageSize,
       PageResultReceiver<T> receiver,
       Completer<void> completer) {
-    LoadInitialCallbackImpl<T> callback = new LoadInitialCallbackImpl<T>(
+    PositionalLoadInitialCallbackImpl<T> callback = new PositionalLoadInitialCallbackImpl<T>(
         this, acceptCount, pageSize, receiver, completer);
 
-    LoadInitialParams params = new LoadInitialParams(
+    PositionalLoadInitialParams params = new PositionalLoadInitialParams(
         requestedStartPosition, requestedLoadSize, pageSize, acceptCount);
     loadInitial(params, callback);
   }
@@ -57,7 +57,7 @@ abstract class PositionalDataSource<T> extends DataSource<int, T> {
   ///               page size.
   /// @param callback Callback that receives initial load data, including
   ///                 position and total data set size.
-  void loadInitial(LoadInitialParams params, LoadInitialCallback<T> callback);
+  void loadInitial(PositionalLoadInitialParams params, PositionalLoadInitialCallback<T> callback);
 
   /// Called to load a range of data from the DataSource.
   /// <p>
@@ -124,7 +124,7 @@ abstract class PositionalDataSource<T> extends DataSource<int, T> {
   ///
   /// @see #computeInitialLoadSize(LoadInitialParams, int, int)
   static int computeInitialLoadPosition(
-      LoadInitialParams params, int totalCount) {
+      PositionalLoadInitialParams params, int totalCount) {
     int position = params.requestedStartPosition;
     int initialLoadSize = params.requestedLoadSize;
     int pageSize = params.pageSize;
@@ -185,7 +185,7 @@ abstract class PositionalDataSource<T> extends DataSource<int, T> {
   ///
   /// @see #computeInitialLoadPosition(LoadInitialParams, int)
   static int computeInitialLoadSize(
-      LoadInitialParams params, int initialLoadPosition, int totalCount) {
+      PositionalLoadInitialParams params, int initialLoadPosition, int totalCount) {
     return min(totalCount - initialLoadPosition, params.requestedLoadSize);
   }
 
@@ -202,7 +202,7 @@ abstract class PositionalDataSource<T> extends DataSource<int, T> {
 }
 
 /// Holder object for inputs to {@link #loadInitial(LoadInitialParams, LoadInitialCallback)}.
-class LoadInitialParams {
+class PositionalLoadInitialParams {
   /// Initial load position requested.
   /// <p>
   /// Note that this may not be within the bounds of your data set, it may need to be adjusted
@@ -223,7 +223,7 @@ class LoadInitialParams {
   /// {@link LoadInitialCallback#onResult(List, int, int)} will be ignored.
   final bool placeholdersEnabled;
 
-  LoadInitialParams(this.requestedStartPosition, this.requestedLoadSize,
+  PositionalLoadInitialParams(this.requestedStartPosition, this.requestedLoadSize,
       this.pageSize, this.placeholdersEnabled);
 }
 
@@ -252,7 +252,7 @@ class LoadRangeParams {
 /// temporary, recoverable error states (such as a network error that can be retried).
 ///
 /// @param <T> Type of items being loaded.
-abstract class LoadInitialCallback<T> {
+abstract class PositionalLoadInitialCallback<T> {
   /// Called to pass initial load state from a DataSource.
   /// <p>
   /// Call this method from your DataSource's {@code loadInitial} function to return data,
@@ -311,13 +311,13 @@ abstract class LoadRangeCallback<T> {
   void onResult(List<T> data);
 }
 
-class LoadInitialCallbackImpl<Value> extends LoadInitialCallback<Value> {
+class PositionalLoadInitialCallbackImpl<Value> extends PositionalLoadInitialCallback<Value> {
   LoadCallbackHelper<int, Value> mCallbackHelper;
   bool _mCountingEnabled;
   int mPageSize;
   Completer<void> _mCompleter;
 
-  LoadInitialCallbackImpl(
+  PositionalLoadInitialCallbackImpl(
       PositionalDataSource<Value> dataSource,
       bool countingEnabled,
       int pageSize,
